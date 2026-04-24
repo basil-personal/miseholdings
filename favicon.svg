@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 12">
+  <polygon points="5,1.5 10,10.5 0,10.5" fill="#000000">
+    <animate attributeName="fill"
+             values="#000000;#D1A7A0;#A93F55;#9BC1BC;#9DD9D2;#000000"
+             dur="12s" repeatCount="indefinite" begin="0s"/>
+  </polygon>
+  <rect x="14" y="1.5" width="9" height="9" fill="#000000">
+    <animate attributeName="fill"
+             values="#000000;#D1A7A0;#A93F55;#9BC1BC;#9DD9D2;#000000"
+             dur="12s" repeatCount="indefinite" begin="-4s"/>
+  </rect>
+  <circle cx="31.5" cy="6" r="4.5" fill="#000000">
+    <animate attributeName="fill"
+             values="#000000;#D1A7A0;#A93F55;#9BC1BC;#9DD9D2;#000000"
+             dur="12s" repeatCount="indefinite" begin="-8s"/>
+  </circle>
+</svg>
