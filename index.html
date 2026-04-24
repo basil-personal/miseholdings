@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mise Holdings</title>
+  <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0C0C0C;
+      --bg-elevated: #141414;
+      --bg-subtle: #1A1A1A;
+      --text: #E8E8E8;
+      --text-secondary: #888;
+      --text-dim: #555;
+      --accent: #A0A0A0;
+      --border: #222;
+      --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* GRAIN OVERLAY */
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.04;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 3rem;
+      background: rgba(12, 12, 12, 0.9);
+      backdrop-filter: blur(20px);
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.3s ease;
+    }
+
+    .logo-shapes {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .logo-shapes span:nth-child(1) {
+      width: 0; height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 9px solid var(--text);
+    }
+    .logo-shapes span:nth-child(2) {
+      width: 9px; height: 9px;
+      background: var(--text);
+    }
+    .logo-shapes span:nth-child(3) {
+      width: 9px; height: 9px;
+      background: var(--text);
+      border-radius: 50%;
+    }
+
+    /* Logo load stagger */
+    .js .logo-shapes span {
+      opacity: 0;
+      transform: scale(0.6);
+      animation: logoIn 0.4s ease-out forwards;
+    }
+    .js .logo-shapes span:nth-child(1) { animation-delay: 0s; }
+    .js .logo-shapes span:nth-child(2) { animation-delay: 0.06s; }
+    .js .logo-shapes span:nth-child(3) { animation-delay: 0.12s; }
+    @keyframes logoIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .logo-text {
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      font-weight: 500;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .nav-right a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s, transform 0.3s ease;
+      display: inline-block;
+    }
+
+    .nav-right a:hover { color: var(--text); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 3rem 6rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.045), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero.cursor-in::before {
+      opacity: 1;
+    }
+
+    .hero-content {
+      max-width: 640px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .js .hero h1 .word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: wordIn 0.6s ease-out forwards;
+    }
+    @keyframes wordIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero p {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      font-weight: 300;
+      max-width: 480px;
+    }
+    .js .hero p {
+      opacity: 0;
+      animation: fadeIn 0.8s ease-out 0.9s forwards;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+    .js .divider {
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.8s ease-out;
+    }
+    .divider.is-visible {
+      transform: scaleX(1);
+    }
+
+    /* SCROLL REVEALS */
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* FOCUS AREAS */
+    .focus {
+      padding: 5rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .focus-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 4rem;
+      gap: 3rem;
+    }
+
+    .focus-header h2 {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .focus-header p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      max-width: 400px;
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    .focus-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .focus-item {
+      background: var(--bg);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: background 0.3s ease, opacity 0.7s ease-out, transform 0.7s ease-out;
+      position: relative;
+    }
+    .focus-item:hover {
+      background: var(--bg-elevated);
+    }
+
+    @media (min-width: 901px) {
+      .js .focus-grid .focus-item.reveal:nth-child(1) { transition-delay: 0s; }
+      .js .focus-grid .focus-item.reveal:nth-child(2) { transition-delay: 0.12s; }
+      .js .focus-grid .focus-item.reveal:nth-child(3) { transition-delay: 0.24s; }
+    }
+
+    .focus-item h3 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      position: relative;
+      display: inline-block;
+    }
+    .focus-item h3::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0;
+      height: 1px;
+      background: var(--text-secondary);
+      transition: width 0.4s ease;
+    }
+    .focus-item:hover h3::after {
+      width: 100%;
+    }
+
+    .focus-item p {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    .focus-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: auto;
+      padding-top: 1.5rem;
+      transition: color 0.3s ease;
+    }
+    .focus-item:hover .focus-tag {
+      color: var(--text-secondary);
+    }
+
+    /* THESIS */
+    .thesis {
+      padding: 6rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .thesis-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .thesis-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding-top: 0.3rem;
+    }
+
+    .thesis-content p {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: var(--text-secondary);
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+
+    .thesis-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* CONTACT */
+    .contact {
+      padding: 6rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .contact-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-content p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    .contact-content a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 400;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      transition: border-color 0.2s;
+      width: fit-content;
+    }
+
+    .contact-content a:hover {
+      border-color: var(--text-secondary);
+    }
+
+    /* FOOTER — above the grain so its cream tone stays clean */
+    footer {
+      padding: 3.5rem 3rem;
+      background: #F5F3F0;
+      margin-top: 2rem;
+      position: relative;
+      z-index: 3;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-left {
+      font-size: 0.72rem;
+      color: #999;
+      letter-spacing: 0.05em;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .footer-logo .logo-shapes span:nth-child(1) {
+      border-bottom-color: #999;
+    }
+    .footer-logo .logo-shapes span:nth-child(2),
+    .footer-logo .logo-shapes span:nth-child(3) {
+      background: #999;
+    }
+
+    .footer-logo .logo-text {
+      color: #999;
+      font-size: 0.72rem;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-right a {
+      font-size: 0.72rem;
+      color: #999;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+
+    .footer-right a:hover { color: #666; }
+
+    /* CUSTOM CURSOR (fine pointer only, wide viewport only) */
+    @media (pointer: fine) and (min-width: 901px) {
+      body { cursor: none; }
+      a, button, .focus-item { cursor: none; }
+      .cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        margin-left: -4px;
+        margin-top: -4px;
+        border-radius: 50%;
+        background: #fff;
+        mix-blend-mode: difference;
+        pointer-events: none;
+        z-index: 10000;
+        transition: width 0.2s ease, height 0.2s ease, margin 0.2s ease, opacity 0.2s ease;
+        will-change: transform;
+      }
+      .cursor.active {
+        width: 32px;
+        height: 32px;
+        margin-left: -16px;
+        margin-top: -16px;
+        opacity: 0.5;
+      }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      nav { padding: 1.25rem 1.5rem; }
+      .hero { padding: 0 1.5rem 4rem; }
+      .focus { padding: 4rem 1.5rem; }
+      .focus-grid { grid-template-columns: 1fr; }
+      .focus-header { flex-direction: column; align-items: flex-start; }
+      .focus-header p { text-align: left; }
+      .thesis { padding: 4rem 1.5rem; }
+      .thesis-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .contact { padding: 4rem 1.5rem; }
+      .contact-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      footer { padding: 2.5rem 1.5rem; }
+      .footer-inner { flex-direction: column; gap: 1.25rem; align-items: flex-start; }
+      .cursor { display: none !important; }
+      body { cursor: auto; }
+    }
+
+    /* REDUCED MOTION */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      .js .reveal { opacity: 1; transform: none; }
+      .js .divider { transform: scaleX(1); }
+      .js .hero h1 .word { opacity: 1; transform: none; }
+      .js .hero p { opacity: 1; animation: none; }
+      .js .logo-shapes span { opacity: 1; transform: scale(1); animation: none; }
+      .cursor, .grain { display: none; }
+      .hero::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grain"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="logo">
+      <span class="logo-shapes"><span></span><span></span><span></span></span>
+      <span class="logo-text">MISE HOLDINGS</span>
+    </a>
+    <div class="nav-right">
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>We partner with restaurants to build scalable fast-casual concepts.</h1>
+      <p>Mise Holdings works with proven full-service operators to translate their concepts into QSR and fast-casual formats built for multi-unit growth.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FOCUS AREAS -->
+  <section class="focus">
+    <div class="focus-header reveal">
+      <h2>QSR Expansion</h2>
+      <p>Three disciplines for turning a single great restaurant into a format built to scale.</p>
+    </div>
+    <div class="focus-grid">
+      <div class="focus-item reveal">
+        <h3>Concept Translation</h3>
+        <p>Reworking the menu, service model, and brand expression so a full-service concept reads as fast-casual without losing the point of view that made it work in the first place.</p>
+        <div class="focus-tag">Concept Design</div>
+      </div>
+      <div class="focus-item reveal">
+        <h3>Prototype &amp; Unit Economics</h3>
+        <p>Designing the store from first principles — kitchen layout, throughput, labor model, food cost, and AUV targets engineered to hold up at ten units and at a hundred.</p>
+        <div class="focus-tag">Unit Economics</div>
+      </div>
+      <div class="focus-item reveal">
+        <h3>Multi-Unit Scaling</h3>
+        <p>Building the operational backbone — real estate playbook, supply chain, training, and systems — so the tenth and fiftieth locations don't drift from what made the first one worth replicating.</p>
+        <div class="focus-tag">Scaling</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+  <!-- THESIS -->
+  <section class="thesis">
+    <div class="thesis-grid">
+      <div class="thesis-label">Thesis</div>
+      <div class="thesis-content reveal">
+        <p>The best restaurants build something rare: a loyal following, a distinct point of view, and food worth coming back for. But most stay locked into a single format.</p>
+        <p>We think the opportunity is in helping these brands translate into fast-casual formats thoughtfully, without diluting what made them work in the first place.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact">
+    <div class="contact-grid">
+      <div class="thesis-label">Contact</div>
+      <div class="contact-content reveal">
+        <p>If you're a restaurant founder thinking about expansion, or an investor interested in the space, we'd like to hear from you.</p>
+        <a href="mailto:team@miseholdings.com">team@miseholdings.com</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <a href="#" class="footer-logo">
+        <span class="logo-shapes"><span></span><span></span><span></span></span>
+        <span class="logo-text">MISE HOLDINGS</span>
+      </a>
+      <span class="footer-left">&copy; 2026 Mise Holdings</span>
+      <div class="footer-right">
+        <a href="mailto:team@miseholdings.com">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function() {
+    // Scroll-triggered reveals (sections + dividers)
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-visible');
+            observer.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -80px 0px' });
+      document.querySelectorAll('.reveal, .divider').forEach(el => observer.observe(el));
+    } else {
+      document.querySelectorAll('.reveal, .divider').forEach(el => el.classList.add('is-visible'));
+    }
+
+    // Hero h1 — split into per-word spans with staggered delays
+    const h1 = document.querySelector('.hero h1');
+    if (h1) {
+      const words = h1.textContent.trim().split(/\s+/);
+      h1.innerHTML = words.map((w, i) =>
+        `<span class="word" style="animation-delay:${(i * 0.06).toFixed(2)}s">${w}</span>`
+      ).join(' ');
+    }
+
+    // Fine-pointer enhancements: custom cursor, magnetic nav, hero glow
+    const mqFine = matchMedia('(pointer: fine)').matches;
+    const mqWide = matchMedia('(min-width: 901px)').matches;
+    const mqReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (mqFine && mqWide && !mqReduced) {
+      // Custom cursor
+      const cursor = document.createElement('div');
+      cursor.className = 'cursor';
+      document.body.appendChild(cursor);
+      let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
+      let cx = tx, cy = ty;
+      document.addEventListener('mousemove', e => {
+        tx = e.clientX; ty = e.clientY;
+      });
+      (function tick() {
+        cx += (tx - cx) * 0.25;
+        cy += (ty - cy) * 0.25;
+        cursor.style.transform = `translate(${cx}px, ${cy}px)`;
+        requestAnimationFrame(tick);
+      })();
+      document.querySelectorAll('a, .focus-item').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('active'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+      });
+
+      // Magnetic nav links
+      document.querySelectorAll('.nav-right a, nav .logo').forEach(link => {
+        link.addEventListener('mousemove', (e) => {
+          const rect = link.getBoundingClientRect();
+          const dx = e.clientX - (rect.left + rect.width / 2);
+          const dy = e.clientY - (rect.top + rect.height / 2);
+          link.style.transform = `translate(${dx * 0.2}px, ${dy * 0.2}px)`;
+        });
+        link.addEventListener('mouseleave', () => {
+          link.style.transform = '';
+        });
+      });
+
+      // Hero ambient glow — radial gradient tracks cursor
+      const hero = document.querySelector('.hero');
+      if (hero) {
+        hero.addEventListener('mousemove', (e) => {
+          const rect = hero.getBoundingClientRect();
+          hero.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+          hero.style.setProperty('--my', `${e.clientY - rect.top}px`);
+          hero.classList.add('cursor-in');
+        });
+        hero.addEventListener('mouseleave', () => {
+          hero.classList.remove('cursor-in');
+        });
+      }
+    }
+  })();
+  </script>
+
+</body>
+</html>
