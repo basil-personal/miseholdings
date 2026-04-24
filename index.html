@@ -161,16 +161,24 @@
       z-index: 3;
     }
 
-    /* HERO DOT GRID — faint Swiss-structural texture */
+    /* HERO DOT GRID — no-JS / reduced-motion fallback */
     .hero::after {
       content: '';
       position: absolute;
       inset: 0;
-      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.5px);
-      background-size: 36px 36px;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.5px);
+      background-size: 28px 28px;
       pointer-events: none;
       z-index: 1;
     }
+    /* Reactive dot field — canvas hides the CSS fallback when JS init succeeds */
+    .hero-dots {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .has-canvas-dots .hero::after { display: none; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(16px); }
@@ -547,6 +555,7 @@
 
   <!-- HERO -->
   <section class="hero">
+    <canvas class="hero-dots" aria-hidden="true"></canvas>
     <div class="hero-content">
       <h1>We partner with restaurants to build scalable fast-casual concepts.</h1>
       <p>Mise Holdings works with proven full-service operators to translate their concepts into QSR and fast-casual formats built for multi-unit growth.</p>
@@ -697,6 +706,83 @@
         hero.addEventListener('mouseleave', () => {
           hero.classList.remove('cursor-in');
         });
+
+        // Reactive dot field — dots displace from cursor, lerp back when it leaves
+        const dotCanvas = hero.querySelector('.hero-dots');
+        const dotCtx = dotCanvas && dotCanvas.getContext('2d');
+        if (dotCtx) {
+          const SPACING = 28;
+          const DOT_RADIUS = 1.0;
+          const INFLUENCE = 140;
+          const MAX_PUSH = 26;
+          const LERP = 0.18;
+          const INF2 = INFLUENCE * INFLUENCE;
+          const dpr = window.devicePixelRatio || 1;
+          let dots = [];
+          let mx = -9999, my = -9999;
+
+          const resizeDots = () => {
+            const rect = hero.getBoundingClientRect();
+            dotCanvas.width = rect.width * dpr;
+            dotCanvas.height = rect.height * dpr;
+            dotCanvas.style.width = rect.width + 'px';
+            dotCanvas.style.height = rect.height + 'px';
+            dotCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            dots = [];
+            const cols = Math.ceil(rect.width / SPACING);
+            const rows = Math.ceil(rect.height / SPACING);
+            const offsetX = (rect.width - (cols - 1) * SPACING) / 2;
+            const offsetY = (rect.height - (rows - 1) * SPACING) / 2;
+            for (let r = 0; r < rows; r++) {
+              for (let c = 0; c < cols; c++) {
+                const hx = offsetX + c * SPACING;
+                const hy = offsetY + r * SPACING;
+                dots.push({ hx, hy, x: hx, y: hy });
+              }
+            }
+          };
+
+          hero.addEventListener('mousemove', (e) => {
+            const rect = hero.getBoundingClientRect();
+            mx = e.clientX - rect.left;
+            my = e.clientY - rect.top;
+          });
+          hero.addEventListener('mouseleave', () => {
+            mx = -9999; my = -9999;
+          });
+          window.addEventListener('resize', resizeDots);
+          resizeDots();
+
+          (function drawDots() {
+            const w = dotCanvas.width / dpr;
+            const h = dotCanvas.height / dpr;
+            dotCtx.clearRect(0, 0, w, h);
+            dotCtx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+            dotCtx.beginPath();
+            for (let i = 0; i < dots.length; i++) {
+              const d = dots[i];
+              const dx = d.hx - mx;
+              const dy = d.hy - my;
+              const d2 = dx * dx + dy * dy;
+              let tx = d.hx, ty = d.hy;
+              if (d2 < INF2 && d2 > 0) {
+                const dist = Math.sqrt(d2);
+                const force = (INFLUENCE - dist) / INFLUENCE;
+                const push = force * MAX_PUSH;
+                tx = d.hx + (dx / dist) * push;
+                ty = d.hy + (dy / dist) * push;
+              }
+              d.x += (tx - d.x) * LERP;
+              d.y += (ty - d.y) * LERP;
+              dotCtx.moveTo(d.x + DOT_RADIUS, d.y);
+              dotCtx.arc(d.x, d.y, DOT_RADIUS, 0, Math.PI * 2);
+            }
+            dotCtx.fill();
+            requestAnimationFrame(drawDots);
+          })();
+
+          document.documentElement.classList.add('has-canvas-dots');
+        }
       }
     }
   })();
