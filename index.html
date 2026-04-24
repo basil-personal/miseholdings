@@ -632,14 +632,14 @@
 
   <script>
   (function() {
-    // Animated favicon — cycle the logomark through the brand palette
+    // Animated favicon — one shape at a time, cycling triangle → square → circle,
+    // color stepping through the brand palette each slot.
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const colors = ['#000000', '#D1A7A0', '#A93F55', '#9BC1BC', '#9DD9D2'];
-      const parsed = colors.map(c => [
-        parseInt(c.slice(1, 3), 16),
-        parseInt(c.slice(3, 5), 16),
-        parseInt(c.slice(5, 7), 16)
-      ]);
+      const SHAPES = ['triangle', 'square', 'circle'];
+      const SLOT_MS = 1400;
+      const FADE_MS = 250;
+
       const canvas = document.createElement('canvas');
       canvas.width = 64;
       canvas.height = 64;
@@ -653,44 +653,50 @@
       }
       link.type = 'image/png';
 
-      const colorAt = (phase) => {
-        const n = parsed.length;
-        const seg = (phase * n) % n;
-        const i = Math.floor(seg);
-        const j = (i + 1) % n;
-        const t = seg - i;
-        const a = parsed[i], b = parsed[j];
-        return `rgb(${Math.round(a[0] + (b[0] - a[0]) * t)},${Math.round(a[1] + (b[1] - a[1]) * t)},${Math.round(a[2] + (b[2] - a[2]) * t)})`;
+      const drawShape = (shape, color, alpha) => {
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        if (shape === 'triangle') {
+          ctx.moveTo(32, 12);
+          ctx.lineTo(52, 50);
+          ctx.lineTo(12, 50);
+          ctx.closePath();
+        } else if (shape === 'square') {
+          ctx.rect(14, 14, 36, 36);
+        } else {
+          ctx.arc(32, 32, 18, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        ctx.globalAlpha = 1;
       };
 
-      const CYCLE_MS = 12000;
       const start = performance.now();
 
       (function tickFavicon() {
-        const base = ((performance.now() - start) % CYCLE_MS) / CYCLE_MS;
+        const elapsed = performance.now() - start;
+        const slot = Math.floor(elapsed / SLOT_MS);
+        const local = elapsed - slot * SLOT_MS;
+
         ctx.clearRect(0, 0, 64, 64);
-        ctx.save();
-        ctx.scale(64 / 36, 64 / 36);
-        ctx.translate(0, 12);
-        // Triangle
-        ctx.fillStyle = colorAt(base);
-        ctx.beginPath();
-        ctx.moveTo(5, 1.5);
-        ctx.lineTo(10, 10.5);
-        ctx.lineTo(0, 10.5);
-        ctx.closePath();
-        ctx.fill();
-        // Square
-        ctx.fillStyle = colorAt((base + 1 / 3) % 1);
-        ctx.fillRect(14, 1.5, 9, 9);
-        // Circle
-        ctx.fillStyle = colorAt((base + 2 / 3) % 1);
-        ctx.beginPath();
-        ctx.arc(31.5, 6, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        const shape = SHAPES[slot % SHAPES.length];
+        const color = colors[slot % colors.length];
+
+        if (local < FADE_MS && slot > 0) {
+          const t = local / FADE_MS;
+          const prev = slot - 1;
+          drawShape(SHAPES[prev % SHAPES.length], colors[prev % colors.length], 1 - t);
+          drawShape(shape, color, t);
+        } else {
+          drawShape(shape, color, 1);
+        }
+
         link.href = canvas.toDataURL('image/png');
-        setTimeout(tickFavicon, 100);
+
+        // Tick fast during fades, slow otherwise
+        const nextSlotAt = (slot + 1) * SLOT_MS;
+        const delay = local < FADE_MS ? 80 : Math.max(80, nextSlotAt - elapsed);
+        setTimeout(tickFavicon, delay);
       })();
     }
 
